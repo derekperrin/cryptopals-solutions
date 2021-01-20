@@ -36,8 +36,9 @@ def is_text(candidate: bytes) -> bool:
     num_chars = sum([c in char_set for c in s])
     return num_chars/len(s) > 0.8 # changing this from 0.7 to 0.8 got rid of a lot of garbage.
     
+# TODO: Document how the scoring works. I wrote this a while ago and I'm pretty
+# sure it's just a modified chi-squared test, but it would be worth double checking.
 def break_single_byte_xor(s: bytes) -> list:
-    
     # try some character c and assign it a score. Return the XOR of c,s as well as the numerical score.
     # A lower score corresponds to a higher likelihood of being the English plaintext we want.
     def score_trial(c, s: bytes) -> tuple:
