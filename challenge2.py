@@ -1,4 +1,4 @@
-import cryptopals
+from cryptopals import basic
 import binascii
 
 if __name__ == '__main__':
@@ -9,7 +9,7 @@ if __name__ == '__main__':
     # str.decode() takes encoded bytes and returns a string object (gets rid of the leading 'b')
 
 
-    output = cryptopals.fixed_xor(binascii.unhexlify(s),binascii.unhexlify(x))
+    output = basic.fixed_xor(binascii.unhexlify(s),binascii.unhexlify(x))
     print('Decoded output: ', output.decode())
     print('Expected output: ', binascii.unhexlify(correctOutput).decode())
     if binascii.hexlify(output).decode() == correctOutput:

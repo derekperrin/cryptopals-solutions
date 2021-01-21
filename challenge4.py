@@ -1,4 +1,4 @@
-import cryptopals
+from cryptopals import basic
 import binascii
 # Given an input file, find out which one of the lines was XOR'd
 # against a single character. Our strategy will be to run the previous code from
@@ -11,7 +11,7 @@ if __name__ == '__main__':
         ciphertexts = [binascii.unhexlify(line.strip()) for line in f]
     plaintexts = []
     for c in ciphertexts:
-        plaintexts += cryptopals.break_single_byte_xor(c)
+        plaintexts += basic.break_single_byte_xor(c)
     plaintext, key, score = sorted(plaintexts,key=lambda x:x[-1])[0]
     print('Plaintext: ', plaintext)
     print('Key: ', key)

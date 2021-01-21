@@ -1,4 +1,4 @@
-import cryptopals
+from cryptopals import basic
 import binascii
 
 if __name__ == '__main__':
@@ -6,5 +6,5 @@ if __name__ == '__main__':
     correctOutput = 'SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t'
     # Need to call unhexlify on s to convert the hex string s into raw bytes.
     print('Expected output: ', correctOutput)
-    print('Actual output: ', cryptopals.hex_to_b64(binascii.unhexlify(s)).decode())
-    cryptopals.hex_to_b64(binascii.unhexlify(s)).decode() == correctOutput
+    print('Actual output: ', basic.hex_to_b64(binascii.unhexlify(s)).decode())
+    basic.hex_to_b64(binascii.unhexlify(s)).decode() == correctOutput
