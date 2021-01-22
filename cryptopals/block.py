@@ -88,9 +88,9 @@ def aes_cbc_encrypt(plaintext, key, iv: bytes, blocksize: int=16) -> bytes:
     return c
     
 # TODO: Remove the padding after decryption. Should probably write a function for this.
-def aes_cbc_decrypt(ciphertext, key, iv: bytes, blocksize: int=16) -> bytes:
+def aes_cbc_decrypt(ciphertext, key, iv: bytes, blocksize: int=16, remove_padding: bool=False) -> bytes:
     def aes_cbc_decrypt_block(ciphertext, chain, key: bytes) -> bytes:
-        x = aes_ecb_decrypt(ciphertext,key,remove_padding=False)
+        x = aes_ecb_decrypt(ciphertext,key,remove_padding)
         return basic.fixed_xor(x, chain)
     prev_ciphertext = iv
     num_blocks = len(ciphertext) // blocksize
@@ -98,7 +98,9 @@ def aes_cbc_decrypt(ciphertext, key, iv: bytes, blocksize: int=16) -> bytes:
     for i in range(num_blocks+1):
         p += aes_cbc_decrypt_block(ciphertext[i*blocksize:(i+1)*blocksize],prev_ciphertext,key)
         prev_ciphertext = ciphertext[i*blocksize:(i+1)*blocksize]
-    return padding_validation(p)
+    if remove_padding:
+        p = padding_validation(p)
+    return p
 
 # These are just functions so ECB can encrypt irregular sized data.
 def aes_ecb_encrypt(plaintext, key: bytes, blocksize: int=16) -> bytes:
