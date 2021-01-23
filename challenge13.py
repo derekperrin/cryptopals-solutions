@@ -20,7 +20,7 @@ if __name__ == '__main__':
     blocksize - len('email=')
 
     # So we'll create an email of length 10(we'll do 26 in this one), followed by 'admin' padded appropriately.
-    chosen_plaintext = 'jupyter_notebook@gmail.com' + block.pkcs7(b'admin').decode()
+    chosen_plaintext = 'jupyter_notebook@gmail.com' + block.pkcs7_pad(b'admin').decode()
     attack_profile = profile_for(chosen_plaintext)
     print(attack_profile[blocksize*2:blocksize*3])
 

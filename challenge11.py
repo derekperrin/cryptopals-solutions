@@ -16,14 +16,18 @@ def encryption_oracle(msg: bytes, a: int=5, b: int=10, keysize: int=16) -> tuple
         return block.aes_cbc_encrypt(msg, key, iv), 'CBC'
 
 if __name__ == '__main__':
+    correct = incorrect = 0
     detection = True
     for i in range(100):
         c, mode = encryption_oracle(b'A'*64)
         guess = block.is_ecb(c)
         if (guess and mode == 'ECB') or (not guess and mode == 'CBC'):
+            correct += 1
             continue
         else:
+            incorrect += 1
             detection = False
-            break
+#            break
+    print(correct, incorrect)
     print('Able to detect ECB/CBC mode 100% of the time? ', detection)    
 

@@ -38,19 +38,19 @@ def ecb_find_block_size(oracle: Oracle) -> int:
     return -1 # couldn't find the block size
 
 # Padding function.
-def pkcs7(plaintext: bytes, blocksize: int=16) -> bytes:
+def pkcs7_pad(plaintext: bytes, blocksize: int=16) -> bytes:
     padding_length = blocksize - len(plaintext) % blocksize
-    if padding_length == blocksize:
-        return plaintext
     return plaintext + bytes([padding_length])*padding_length
 
-# def ecb_encrypt(plaintext,key: bytes) -> bytes:
-#     cipher = AES.new(key, AES.MODE_ECB)
-#     return cipher.encrypt(plaintext)
-# 
-# def ecb_decrypt(ciphertext,key: bytes) -> bytes:
-#     cipher = AES.new(key, AES.MODE_ECB)
-#     return cipher.decrypt(ciphertext)
+def pkcs7_unpad(plaintext: bytes, blocksize: int=16) -> bytes:
+    padding_char = plaintext[-1]
+    # If the value of the last character is greater than the blocksize, then it's not a padding character.
+    if padding_char > blocksize:
+        return plaintext
+    for i in range(padding_char):
+        if plaintext[-i-1] != padding_char:
+            raise ValueError('Plaintext has invalid padding')
+    return plaintext[:-padding_char]
 
 def find_padding_length(oracle: Oracle, blocksize: int=16) -> int:
     padding = b''
@@ -60,16 +60,6 @@ def find_padding_length(oracle: Oracle, blocksize: int=16) -> int:
         if len(oracle.encrypt(padding)) != starting_length:
             return i
 
-def padding_validation(plaintext: bytes, blocksize: int=16) -> bytes:
-    padding_char = plaintext[-1]
-    # If the value of the last character is greater than the blocksize, then it's not a padding character.
-    if padding_char >= blocksize:
-        return plaintext
-    for i in range(padding_char):
-        if plaintext[-i-1] != padding_char:
-            raise ValueError('Plaintext has invalid padding')
-    return plaintext[:-padding_char]
-
 def aes_cbc_encrypt(plaintext, key, iv: bytes, blocksize: int=16) -> bytes:
     # This is a helper function that just encrypts one 128 bit block 
     if len(iv) != len(key):
@@ -77,8 +67,9 @@ def aes_cbc_encrypt(plaintext, key, iv: bytes, blocksize: int=16) -> bytes:
         encryption will not work correctly.')
     def aes_cbc_encrypt_block(plaintext, chain, key: bytes) -> bytes:
         x = basic.fixed_xor(plaintext, chain)
-        return aes_ecb_encrypt(x,key)
-    padded = pkcs7(plaintext)
+        cipher = AES.new(key, AES.MODE_ECB)
+        return cipher.encrypt(x)
+    padded = pkcs7_pad(plaintext)
     num_blocks = len(padded) // blocksize
     prev_ciphertext = iv
     c = b''
@@ -87,10 +78,10 @@ def aes_cbc_encrypt(plaintext, key, iv: bytes, blocksize: int=16) -> bytes:
         prev_ciphertext = c[i*blocksize:(i+1)*blocksize]
     return c
     
-# TODO: Remove the padding after decryption. Should probably write a function for this.
 def aes_cbc_decrypt(ciphertext, key, iv: bytes, blocksize: int=16, remove_padding: bool=False) -> bytes:
     def aes_cbc_decrypt_block(ciphertext, chain, key: bytes) -> bytes:
-        x = aes_ecb_decrypt(ciphertext,key,remove_padding)
+        cipher = AES.new(key, AES.MODE_ECB)
+        x = cipher.decrypt(ciphertext)
         return basic.fixed_xor(x, chain)
     prev_ciphertext = iv
     num_blocks = len(ciphertext) // blocksize
@@ -99,12 +90,12 @@ def aes_cbc_decrypt(ciphertext, key, iv: bytes, blocksize: int=16, remove_paddin
         p += aes_cbc_decrypt_block(ciphertext[i*blocksize:(i+1)*blocksize],prev_ciphertext,key)
         prev_ciphertext = ciphertext[i*blocksize:(i+1)*blocksize]
     if remove_padding:
-        p = padding_validation(p)
+        p = pkcs7_unpad(p)
     return p
 
 # These are just functions so ECB can encrypt irregular sized data.
 def aes_ecb_encrypt(plaintext, key: bytes, blocksize: int=16) -> bytes:
-    padded = pkcs7(plaintext)
+    padded = pkcs7_pad(plaintext)
     cipher = AES.new(key, AES.MODE_ECB)
     return cipher.encrypt(padded)
 
@@ -113,6 +104,6 @@ def aes_ecb_decrypt(ciphertext, key: bytes, remove_padding=True) -> bytes:
      return cipher.decrypt(ciphertext)
      p = cipher.decrypt(ciphertext)
      if remove_padding:
-         return padding_validation(p)
+         return pkcs7_unpad(p)
      else:
         return p

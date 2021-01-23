@@ -8,7 +8,7 @@ if __name__ == '__main__':
         ciphertext = base64.b64decode(f.read())
     key = b'YELLOW SUBMARINE'
     iv = b'\x00'*BLOCK_SIZE
-    plaintext = block.aes_cbc_decrypt(ciphertext,key,iv)
+    plaintext = block.aes_cbc_decrypt(ciphertext,key,iv,remove_padding=True)
     print(plaintext.decode())
 
     # We'll silently test to make sure encryption works correctly too.
